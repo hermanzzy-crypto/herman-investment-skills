@@ -11,7 +11,7 @@ description: >
 license: MIT
 metadata:
   author: Herman 赵泽宇（与 Claude 共建）
-  version: "1.0.0"
+  version: "1.1.0"
   short-description: Herman 五维投资分析框架（价值 × 情绪 × 证据）
 ---
 
@@ -66,7 +66,8 @@ metadata:
 - ⚠️ **好公司 ≠ 好投资**：盛合 188x、凯格 96x、英维克 167x——贵了也是差投资。
 
 ## 投资信仰（择时层 = 投票机，三维博弈）
-> 量化"会不会有人接盘、涨更高"，**不是价值判断**。三张指标表 + 5 个数据陷阱见 `references/data-sources.md`。
+> 量化"会不会有人接盘、涨更高"，**不是价值判断**。三张指标表 + 6 个数据陷阱 + "谁在什么价位/成本"附录见 `references/data-sources.md`。
+> ⚠️ **"主力成本 / 主力资金流向"是算法推断的伪身份（弱信号），勿当真身**；判断成本/筹码优先用龙虎榜席位、大宗交易、定增价、股东户数、北向机构持仓等"真身"数据。
 
 - **维度一 概念火不火（热度）**：概念板块涨幅 / 换手率 / 人气榜 / 研报数 / 调研 / 舆论。
 - **维度二 多少人信（共识广度）**：股东户数 / 两融 / 研报买入占比 / 公募家数 / 北向社保QFII / 估值分位。
@@ -95,7 +96,7 @@ metadata:
 ## Bundled resources
 
 - `references/framework.md` — 原始五维框架清单（Herman 手写版）。
-- `references/data-sources.md` — 投资信仰三维指标表（akshare 接口）+ 5 个数据陷阱。
+- `references/data-sources.md` — 投资信仰三维指标表（akshare 接口）+ 6 个数据陷阱 + "谁在什么价位/成本"信号可靠度附录（主力成本=弱信号）。
 - `scripts/herman_scorecard.py` — 五维加权打分（可复现，输出分数 + 评级）。
 - `scripts/pull_stock_snapshot.py` — 一键拉某只票的实时快照（行情/多年财报/股东户数/两融/龙虎榜/北向季度/研报）。
 
