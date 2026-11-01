@@ -14,7 +14,7 @@ sentiment(情绪/择时) 与 evidence(证据强度) 仅作标注, 不计入综�
   cat stocks.json | python herman_scorecard.py - --format both
 """
 from __future__ import annotations
-import argparse, json, sys
+import argparse, json, math, sys
 
 WEIGHTS = {"business": 25, "chokepoint": 15, "financial_health": 25, "value": 20, "valuation": 15}
 LABELS = {"business": "商业模式", "chokepoint": "卡点", "financial_health": "财务健康",
@@ -33,18 +33,22 @@ def _n(v, label):
     try:
         x = float(v)
     except (TypeError, ValueError):
-        raise SystemExit(f"{label} 必须是 0-5 的数字, 收到 {v!r}")
-    if not 0 <= x <= 5:
-        raise SystemExit(f"{label} 必须在 0-5 之间, 收到 {x}")
+        raise SystemExit(f"{label} 必须是 1-5 的数字, 收到 {v!r}")
+    if isinstance(v, bool) or not math.isfinite(x) or not 1 <= x <= 5:
+        raise SystemExit(f"{label} 必须在 1-5 之间且为有限数字, 收到 {v!r}")
     return x
 
 
 def score_one(d: dict) -> dict:
+    if not isinstance(d, dict):
+        raise SystemExit("每只公司的输入必须是 JSON 对象")
     s = d.get("scores", {})
+    if not isinstance(s, dict) or any(k not in s for k in WEIGHTS):
+        raise SystemExit("五维评分必须完整；资料不足请暂不评分，不以0或中性分补齐")
     total = 0.0
     detail = {}
     for k, w in WEIGHTS.items():
-        r = _n(s.get(k, 0), f"scores.{k}")
+        r = _n(s[k], f"scores.{k}")
         pts = r / 5.0 * w
         detail[k] = {"score": r, "weight": w, "points": round(pts, 2)}
         total += pts
