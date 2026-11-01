@@ -4,7 +4,7 @@
 > 先用"**称重机**"判断生意值多少钱，再用"**投票机**"判断有没有人接盘，每个结论都标证据强度。
 > **仅研究支持，非投资建议。**
 
-A personal investment-research skill for Claude / Agent-Skills-compatible clients. It analyzes a single A-share / HK-share stock across **five value dimensions + three sentiment dimensions**, scores it, and tells you both *what the business is worth* and *whether there's anyone left to take the shares higher* — with every claim graded by evidence strength.
+A personal investment-research skill for Claude / Agent-Skills-compatible clients. It analyzes a single A-share / HK-share stock across **five value dimensions + three sentiment dimensions**, scores it, and evaluates business quality, valuation assumptions and market participation — with every claim graded by evidence strength.
 
 ---
 
@@ -14,7 +14,7 @@ A personal investment-research skill for Claude / Agent-Skills-compatible client
 2. **证据分级**：每个当前结论标 **强**（财报/公告/订单）/ **中**（媒体/研报）/ **弱**（传闻）；绝不靠记忆下当前市场判断。
 3. **稀缺 ≠ 便宜，好公司 ≠ 好投资**：卡点真实、公司优秀，贵了仍是差投资。
 4. **必须可证伪**：每个判断写下"什么情况说明这个判断错了"。
-5. **散户户数暴增 = 反指**（接盘已发生），不是继续涨的信号。
+5. **证据有边界**：户数、季度托管持仓和融资是观察线索，不独立识别投资者身份或预测涨跌；缺关键材料允许暂不评分。
 
 ## 五维框架（称重机）
 
@@ -30,24 +30,43 @@ A personal investment-research skill for Claude / Agent-Skills-compatible client
 
 - **概念火不火**（热度）、**多少人信**（共识广度）、**资金流入**（真金白银）
 - 量化"会不会有人接盘"，**不是价值判断**——用价值选票、用它看时点。
-- 危险信号：户数暴增 / 北向机构减持 / 放量滞涨 / 融资见顶 / 估值极值 → 任意 2-3 个出现即警惕。
+- 危险信号：户数暴增 / 北向机构减持 / 放量滞涨 / 融资见顶 / 估值极值 → 结合日期、覆盖与基本面判断，不用信号数量推算涨跌概率。
 
 ## 评分
 
-五维各 1-5 分，加权合成 0-100：**商业模式 25% / 卡点 15% / 财务健康 25% / 价值 20% / 估值 15%**；情绪是独立择时列、不计入价值分。
+五维各 1-5 分，加权得分（满分100）：**商业模式 25% / 卡点 15% / 财务健康 25% / 价值 20% / 估值 15%**；情绪是独立择时列、不计入价值分。
 
 ---
+
+## 怎样把研究做成可复用判断（v1.2）
+
+| 研究问题 | 方法 |
+|---|---|
+| 增长是否真实、可持续 | 拆价格/销量/组合/并表与特殊收益，区分归母、扣非、正常化 |
+| 利润为何没有现金 | 同期/TTM现金转换、平均余额周转、成长资本开支与债务期限交叉检查 |
+| 现价要求兑现什么 | 同口径比较、当前价重算前瞻PE、情景/反向DCF，区分FCFF/FCFE |
+| 多只基金是否分散 | 确认目标总额或新增资金，穿透持仓与共同风险，区分产品占比和股票敞口 |
+| H股折价是否值得切换 | 新增选择与已有A股换H分开，核对佣金、税费、汇率和流动性 |
+| 到了旧观察价是否就便宜 | 先回看盈利假设、确认/失效条件与新证据，修改条件保留理由 |
+| 怎样避免越研究越散 | 聚焦能改变结论的证据，有限重试，明确缺口与复核时点 |
+
+入口按场景读取参考文件；日常近况更新无需重复全套深研。只公开可复用方法与代码，不附个人持仓、账户费率、历史交易或日报数据。原有评分权重保留，分数用于研究优先级，不替代安全边际或仓位判断。
 
 ## 目录结构
 
 ```
 SKILL.md                       # 可触发的执行协议
 references/
-  framework.md                 # 五维框架清单
-  data-sources.md              # 三维博弈指标表 + akshare 接口 + 5 个数据陷阱
+  framework.md                 # 五维检查清单
+  research-protocol.md         # 证据、财务口径、同业比较与估值
+  portfolio-and-funds.md        # 基金穿透、风险预算、QDII与A/H
+  monitoring-and-review.md      # 条件状态、公告/事件与复盘
+  data-sources.md              # 接口、数据边界与回退
 scripts/
-  herman_scorecard.py          # 五维加权打分（输入 JSON → 0-100 分 + 排序表）
-  pull_stock_snapshot.py       # 一键拉单票实时快照（行情/三表/户数/两融/龙虎榜/北向/研报）
+  herman_scorecard.py          # 完整1-5评分加权计算，缺失/非法值报错
+  pull_stock_snapshot.py       # 沪深A股资料收集，日期滚动/缺失显式提示
+tests/
+  test_research_tools.py        # 离线回归：跨年、缺失、匹配与评分
 ```
 
 ## 安装
@@ -66,10 +85,11 @@ git clone https://github.com/hermanzzy-crypto/herman-investment-skills.git "$SKI
 - "用 Herman 框架分析 中际旭创" / "研究一下 XX" / "XX 值不值得买"
 - "XX 的 供求关系 / 财务健康度 / 议价能力 / 估值 / 接盘资金面"
 - "给这几只股票打分排序"
+- "复核这几个基金的组合重叠" / "A股和H股价差是否值得考虑"
 
 脚本也可独立调用：
 ```bash
-# 拉某只票的实时快照
+# 收集某只沪深A股资料（非完整研究，需核对各节时点）
 python3 scripts/pull_stock_snapshot.py 002463
 
 # 五维打分排序
@@ -81,7 +101,14 @@ echo '[{"name":"沪电股份","code":"002463","scores":{"business":4,"chokepoint
 
 - **[akshare](https://github.com/akfamily/akshare)**（实时行情/财报/资金面，免费）：`pip install akshare`
 - **[serenity-skill](https://github.com/muxuuu/serenity-skill)**（②产业链卡点维度调用；未装则手动走卡点逻辑）
-- 注意：北向个股日度持股自 **2024-08-16 已停**（只剩全市场日度 + 季度香港中央结算）。
+- 互联互通数据按研究日核查披露制度；季度托管持仓不能代替个股当日交易。港股使用HKEX及可靠行情源，不依赖个人机器脚本。
+- 快照工具的交易日期依赖本次交易日历响应，日历过旧则明确缺失；报价未核实时点时不承诺最新。不是历史时点回测器。
+
+离线验证（需要akshare依赖中的pandas）：
+```bash
+python3 -m unittest discover -s tests -v
+```
+离线检查不证明当日第三方接口可用，实际研究仍需核查本次响应。
 
 ## ⚠️ 免责声明
 
